@@ -188,17 +188,21 @@
             }
         },
         "servers": {
-            "cpu_core" : {
+            "DSP" : {
                 "id": 0,
-                "count" : 8
+                "count" : 1540
             },
-            "gpu" : {
+            "Shared mem" : {
                 "id": 1,
-                "count" : 2
+                "count" : 1
             },
-            "fft_accel" : {
+            "Const mem" : {
                 "id": 2,
                 "count" : 1
+            },
+            "data mem" : {
+                "id": 3,
+                "count" : 2
             }
         },
 
