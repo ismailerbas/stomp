@@ -1,3 +1,29 @@
+<<<<<<< HEAD
+Node name, sub deadline ratio, DSP, Shared mem, Const mem, data mem
+0, 0.46, None, None, None, 3
+1, 0.31, None, None, None, 3
+2, 0.46, 2, None, None, None
+3, 0.33, None, None, None, 3
+4, 0.45, None, None, None, 3
+5, 0.25, 2, None, None, None
+6, 0.46, None, None, 5, None
+7, 0.28, None, None, None, 3
+8, 0.22, None, None, None, 3
+9, 0.36, 8, None, None, None
+10, 0.27, None, None, 5, None
+11, 0.26, None, None, None, 3
+12, 0.26, None, None, None, 3
+13, 0.34, 2, None, None, None
+14, 0.16, None, None, None, 3
+15, 0.25, None, None, None, 3
+16, 0.26, 2, None, None, None
+17, 0.40, None, None, None, 3
+18, 0.25, None, None, None, 3
+19, 0.33, 8, None, None, None
+20, 0.12, None, None, None, 3
+21, 0.22, 8, None, None, None
+22, 0.20, None, None, None, 3
+=======
 Node name, sub deadline ratio, DSP, Shared mem, Const mem, data mem
 0, 0.31, None, None, None, 3
 1, 0.17, None, None, None, 3
@@ -22,3 +48,5 @@ Node name, sub deadline ratio, DSP, Shared mem, Const mem, data mem
 20, 0.28, None, None, None, 3
 21, 0.26, 8, None, None, None
 22, 0.22, None, None, None, 3
+
+>>>>>>> 93b9585f6c9f0f390e8aa14d7e8ee0ab2a890d69
