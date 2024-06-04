@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 Node name, sub deadline ratio, DSP, Shared mem, Const mem, data mem
 0, 0.12, None, None, None, 3
 1, 0.30, 2, None, None, None
@@ -16946,6 +16946,3 @@ Node name, sub deadline ratio, DSP, Shared mem, Const mem, data mem
 8469, 0.40, 2, None, None, None
 8470, 0.45, None, None, 5, None
 8471, 0.34, None, None, None, 3
-​
-
->>>>>>> 93b9585f6c9f0f390e8aa14d7e8ee0ab2a890d69
