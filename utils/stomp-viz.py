@@ -29,19 +29,19 @@ server2col = {} # Map of server type to color.
 
 assert len(sys.argv) >= 2, "Insufficient args"
 trace_fname = sys.argv[1]
-trace_dir = trace_fname.split('/')[0]
+trace_dir = "output" #trace_fname.split('/')[0]
 
 assert os.path.exists(trace_fname), "Trace file doesn't exist"
 print("Reading trace file: %s" % trace_fname)
 
 df = pd.read_csv(trace_fname)
-df.sort_values(['task_dag_id', 'task_arrival_time'], ascending=[True, True], inplace=True)
+df.sort_values(['dag_id', 'task_arrival_time'], ascending=[True, True], inplace=True)
 # Get list of DAG IDs.
 df['is_last'] = False
-for dag_id in df.task_dag_id.unique():
-    df_series = df.loc[df.task_dag_id == dag_id, 'is_last']
-    df.loc[df.task_dag_id == dag_id, 'is_last'] = [False] * (df_series.size-1) + [True]
-    # df.loc[df.task_dag_id == dag_id].iloc[-1]['is_last'] = True
+for dag_id in df.dag_id.unique():
+    df_series = df.loc[df.dag_id == dag_id, 'is_last']
+    df.loc[df.dag_id == dag_id, 'is_last'] = [False] * (df_series.size-1) + [True]
+    # df.loc[df.dag_id == dag_id].iloc[-1]['is_last'] = True
 # print(df)
 
 if end_ts == -1:
@@ -64,8 +64,8 @@ def gen_svg_for_group(group_by):
     deadlines = {}
     for row in df.itertuples():
         # print(row)
-        dag_id = int(row.task_dag_id)
-        tid = int(row.task_tid)
+        dag_id = int(row.dag_id)
+        tid = int(row.task_type)
         is_last = int(row.is_last)
         # Get task name
         t = "%u.%u" % (dag_id, tid)
@@ -103,7 +103,7 @@ def gen_svg_for_group(group_by):
         if len(p) == 1 and p[0] == 'nan':
             p = []
         else:
-            parent_dag_id = int(row.task_dag_id)
+            parent_dag_id = int(row.dag_id)
             try:
                 p = [dag_task_id2task[str(parent_dag_id) + '.' + parent_tid] for parent_tid in p]
             except:

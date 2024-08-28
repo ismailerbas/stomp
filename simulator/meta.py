@@ -81,7 +81,7 @@ class TASK:
         self.rank                       = -1
         self.processor                  = -1
 
-    def init_task(self, arrival_time, dag_type, dag_id, tid, type, params, priority, deadline, dag_dtime):
+    def init_task(self, arrival_time, dag_type, dag_id, tid, type, compute_time_array, priority, deadline, dag_dtime):
         self.dag_type                   = dag_type
         self.dag_id                     = dag_id
         self.tid                        = tid
@@ -89,8 +89,8 @@ class TASK:
         self.priority                   = priority  # Task input priority
         self.deadline                   = deadline  # Task input deadline
         self.dtime                      = dag_dtime
-        self.mean_service_time_dict     = params['mean_service_time']
-        self.mean_service_time_list     = sorted(params['mean_service_time'].items(), key=operator.itemgetter(1))
+        self.mean_service_time_dict     = compute_time_array
+        self.mean_service_time_list     = sorted(compute_time_array.items(), key=operator.itemgetter(1))
         self.arrival_time               = arrival_time
         self.noaffinity_time            = 0
         self.departure_time             = None
@@ -109,7 +109,7 @@ class TASK:
         self.parent_data                = []
         self.server_type                = None
         self.ptoks_used                 = None  # Power consumed during actual execution on servers[server_type]
-        self.power_dict                 = params['power']
+        self.power_dict                 = {}
         self.rank_type                  = 0
 
         self.reserved_server_id         = None
@@ -278,7 +278,7 @@ class META:
 
         if task_completed.priority > 1:
             wait_time_crit = task_completed.task_lifetime - task_completed.task_service_time
-            wcet_crit = task_completed.per_server_service_dict['cpu_core']
+            wcet_crit = max([task_completed.per_server_service_dict[x] for x in task_completed.per_server_service_dict if task_completed.per_server_service_dict[x] != None])
 
             self.lt_wcet_r_crit += (float)(task_completed.task_lifetime/wcet_crit)
 
@@ -286,7 +286,7 @@ class META:
             self.tasks_completed_count_crit += 1
         else:
             wait_time_nocrit = task_completed.task_lifetime - task_completed.task_service_time
-            wcet_nocrit = task_completed.per_server_service_dict['cpu_core']
+            wcet_nocrit = max([task_completed.per_server_service_dict[x] for x in task_completed.per_server_service_dict if task_completed.per_server_service_dict[x] != None])
 
             self.lt_wcet_r_nocrit += (float)(task_completed.task_lifetime/wcet_nocrit)
 
@@ -314,9 +314,10 @@ class META:
                     # print("Completed: %d,%d,%d,%d,%d,%d" % (dag_id_completed,task_completed.tid,dag_completed.slack,dag_completed.deadline,task_completed.arrival_time,task_completed.task_lifetime))
 
                     task = task_completed.type
-                    assert task_completed.ptoks_used
-                    # power = self.params['simulation']['tasks'][task]['power'][task_completed.server_type]
-                    #print(task,power,task_completed.task_lifetime)
+                    if self.params['simulation']['pwr_mgmt']:
+                        assert task_completed.ptoks_used
+                        # power = self.params['simulation']['tasks'][task]['power'][task_completed.server_type]
+                        #print(task,power,task_completed.task_lifetime)
 
                     dag_completed.graph.remove_node(node)
                     break
@@ -510,13 +511,13 @@ class META:
 
     def populate_from_trace(self, in_trace_name, application):
         with open(in_trace_name, 'r') as input_trace:
-            for line in input_trace.readlines():
+            for line in input_trace.readlines()[1:]: #Skip the header
                 tmp = line.strip().split(',')
                 atime = int(int(tmp.pop(0))*self.params['simulation']['arrival_time_scale'])
                 dag_id = int(tmp.pop(0))
                 dag_type = tmp.pop(0)
 
-                graphml_file = "inputs/{0}/dag_input/dag{1}.graphml".format(application, dag_type)
+                graphml_file = "inputs/{0}/dag_input/dag_{1}.graphml".format(application, dag_type)
                 graph = nx.read_graphml(graphml_file, TASK)
 
                 #### AFFINITY ####
@@ -534,6 +535,14 @@ class META:
                 #    comp_file = "inputs/{0}/dag_input/dag_{1}_slack.txt".format(application, dag_type)
 
                 comp = read_matrix(comp_file)
+                self.params['simulation']['tasks'] = {}
+                def convert_comp_to_param(comp, resource_type):
+                    for time_profile in comp:
+                        self.params['simulation']['tasks'][time_profile[0]] = {}
+                        for idx, resource in enumerate(resource_type):
+                            if time_profile[2 + idx] != 'None': self.params['simulation']['tasks'][time_profile[0]][resource] = int(time_profile[2 + idx])
+
+                convert_comp_to_param(comp, self.params['simulation']['servers'].keys())
                 priority = int(tmp.pop(0))
                 deadline = int(tmp.pop(0))*(self.params['simulation']['arrival_time_scale'])
                 dtime = atime + deadline

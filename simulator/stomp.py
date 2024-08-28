@@ -89,17 +89,17 @@ class Server:
                 parent_server_type          = self.stomp_obj.servers[parent[1]].type
                 if(parent_server_type.endswith("accel")):
                     parent_server_type = "accel"
-                noaffinity_time             += self.stomp_obj.params['simulation']['tasks'][task.type]['comm_cost'][parent_server_type][server_type]
+                noaffinity_time             += 0 #self.stomp_obj.params['simulation']['tasks'][task.type]['comm_cost'][parent_server_type][server_type]
                 # noaffinity_time             += 0.25 * task.mean_service_time_dict[self.type]
         
         # Add time for data read not from a parent node if same task was performed on the server before. Eg: Weights for Neural network or twiddle factors for FFT
         if(self.task == None or self.task.type != task.type):
-            noaffinity_time += self.stomp_obj.params['simulation']['tasks'][task.type]['data_cost'][server_type]
+            noaffinity_time += 0 #self.stomp_obj.params['simulation']['tasks'][task.type]['data_cost'][server_type]
         
         return float(noaffinity_time)
 
     def assign_task(self, sim_time, task, service_time_scale=None):
-        self.stomp_obj.print("Assigning task to server {},{}".format(self.id, self.type))
+        self.stomp_obj.print("Assigning task {}[{}] to server {},{}".format(task, task.tid, self.id, self.type))
         # At this moment, we know the target server where the task will run.
         # Therefore, we can compute the task's service time
         task_dag_id                     = task.dag_id
@@ -261,7 +261,7 @@ class STOMP:
         self.stats['Queue Size Histogram']    = numpy.zeros(self.num_bins, dtype=int)  # N-bin histogram
         self.stats['Max Queue Size']          = 0
 
-        self.task_trace_files                 = {}   # Per task type
+        # self.task_trace_files                 = {}   # Per task type
         self.task_trace_file                  = open(self.working_dir + '/' + self.basename + '.global.trace.csv', 'w')
         # self.task_trace_file.write('%s\n\n' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         # self.task_trace_file.write("CONFIGURATION:\n%s\n" % (self.params))  #pprint.pprint(self.params))
@@ -355,10 +355,10 @@ class STOMP:
         self.meta_eventq.put(self.env.now, events.TASK_COMPLETED)
         # self.print("TSCHED interrupting Meta")
         self.meta.action.interrupt()
-        assert server.curr_job_ptoks != 0 and server.curr_job_ptoks != None
 
         # Return the freed up power tokens to the pool of available power tokens.
         if self.params['simulation']['pwr_mgmt']:
+            assert server.curr_job_ptoks != 0 and server.curr_job_ptoks != None
             self.sched_policy.avail_ptoks += server.curr_job_ptoks
         # logging.info('[%10d][%d.%d] restored %u ptoks, current available ptoks = %u, releasing server = %d' %
             # (self.sim_time, server.task.dag_id, server.task.tid, server.curr_job_ptoks,
@@ -414,7 +414,7 @@ class STOMP:
         )
 
         avg_resp_time = self.stats['Avg Resp Time per Type'][task_type] / self.stats['Tasks Serviced per Type'][task_type]
-        self.task_trace_files[task_type].write('%ld\t%.1f\n' % (self.env.now, avg_resp_time))
+        # self.task_trace_files[task_type].write('%ld\t%.1f\n' % (self.env.now, avg_resp_time))
 
         self.sched_policy.remove_task_from_server(self.env.now, server)
 
@@ -646,11 +646,11 @@ class STOMP:
             self.stats['Tasks Serviced per Type'][task_type] = 0
 
             trace_filename = self.working_dir + '/' + self.basename + '.' + task_type + '.' + self.params['simulation']['sched_policy_module'].split('.')[-1] + '.trace.csv'
-            self.task_trace_files[task_type] = open(trace_filename, 'w')
+            # self.task_trace_files[task_type] = open(trace_filename, 'w')
 
-            self.task_trace_files[task_type].write('%s\n\n' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-            self.task_trace_files[task_type].write("CONFIGURATION:\n%s\n" % (self.params))  #pprint.pprint(self.params))
-            self.task_trace_files[task_type].write('Time\tResponse time (avg)\n')
+            # self.task_trace_files[task_type].write('%s\n\n' % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            # self.task_trace_files[task_type].write("CONFIGURATION:\n%s\n" % (self.params))  #pprint.pprint(self.params))
+            # self.task_trace_files[task_type].write('Time\tResponse time (avg)\n')
 
         self.num_tasks_generated += 1
 
@@ -670,7 +670,7 @@ class STOMP:
 
             # self.print("Task NOT assigned to server")
             if server == None:
-                continue
+                break
             self.ta_time = self.sched_policy.ta_time
             self.to_time = self.sched_policy.to_time
 
@@ -779,8 +779,8 @@ class STOMP:
         self.task_trace_file.close()
         self.task_assign_trace.close()
 
-        for task in self.task_trace_files:
-            self.task_trace_files[task].close()
+        # for task in self.task_trace_files:
+            # self.task_trace_files[task].close()
 
         if (self.output_trace_file):
             self.output_trace.close()

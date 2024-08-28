@@ -1,0 +1,177 @@
+{
+
+    "general" : {
+        "logging_level":        "INFO",
+        "random_seed":          0,
+        "working_dir":          ".",
+        "basename":             "sched",
+        "pre_gen_arrivals":     false,
+        "input_trace_file":	    "inputs/FLI/trace_files/FLI_trace.trc",
+        "output_trace_file":    "",
+        "unit_of_time":         "10^-5s",
+        "unit_of_power":        "mW",
+        "comment":              "Power values derived from Jetson TX1 dev board. CPU power numbers are scaled to 1/N where N is the number of cores on the TX1. Accel power values are placeholders right now and are set to 1/5th of corresponding GPU power numbers."
+    },
+
+    "simulation" : {
+        "application":         "FLI",
+        "meta_policy_module":  "meta_policies.edf",
+        "sched_policy_module": "task_policies.simple_policy_ver2",
+        "policy":              "simple_policy_ver2",
+        "contention":          false,
+        "drop":                false,
+
+        "pwr_mgmt": false,
+        "pwr_model": "simple",
+        "total_ptoks": 1000,
+        "slack_perc": 0,
+        "dvfs": 1,
+
+        "base_clk" : 1.0,
+        "min_clk_f" : 0.1,
+        "v_nom" : 0.80,
+        "v_th"  : 0.35,
+        "v_min" : 0.45,
+        "power_scale" : 2.5,
+        "no_completed_activity_check": true,
+        "promote":             false,
+        "max_tasks_simulated": 10000,
+        "mean_arrival_time":   10,
+        "power_mgmt_enabled":  false,
+        "max_queue_size":      1000000,
+        "arrival_time_scale":  1.0,
+        "progress_intvl_f":    1000,
+
+        "applications": {
+            "synthetic": {
+                "dag_types": {
+                    "5": {
+                        "deadline" : 537
+                    },
+                    "7": {
+                        "deadline": 428
+                    },
+                    "10": {
+                        "deadline": 1012
+                    }
+                }
+            },
+            "FLI": {
+                "dag_types": {
+                    "1": {
+                        "deadline" : 9999
+                    },
+                    "2": {
+                        "deadline": 9999
+                    }
+                }
+            }
+
+        },
+
+        "policies": {
+            "heft" : {
+                "meta_policy" : "heft",
+                "task_policy" : "heft"
+            },
+            "rheft" : {
+                "meta_policy" : "rheft",
+                "task_policy" : "rheft"
+            },
+            "edf" : {
+                "meta_policy" : "edf",
+                "task_policy" : "edf"
+            },
+            "edf_eft" : {
+                "meta_policy" : "edf",
+                "task_policy" : "edf_eft"
+            },
+            "simple_policy_ver2": {
+                "meta_policy" : "edf",
+                "task_policy" : "simple_policy_ver2"
+            },
+            "ts_eft": {
+                "meta_policy" : "edf",
+                "task_policy" : "ts_eft"
+            },
+            "ads" : {
+                "meta_policy" : "heft",
+                "task_policy" : "ads"
+            },
+            "ms1" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms"
+            },
+            "ms2" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms"
+            },
+            "ms1_hom" : {
+                "meta_policy" : "ms_wcet",
+                "task_policy" : "ms_hom"
+            },
+            "ms2_hom" : {
+                "meta_policy" : "ms_wcet",
+                "task_policy" : "ms_hom"
+            },
+            "ms1_hetero" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hetero"
+            },
+            "ms2_hetero" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hetero"
+            },
+            "ms1_hyb" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hyb"
+            },
+            "ms2_hyb" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hyb"
+            },
+            "ms1_hyb_update" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hyb_update"
+            },
+            "ms2_hyb_update" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hyb"
+            },
+            "ms1_heft" : {
+                "meta_policy" : "heft",
+                "task_policy" : "ms_update_heft"
+            },
+            "ms2_heft" : {
+                "meta_policy" : "heft",
+                "task_policy" : "ms_update_heft"
+            },
+            "ms1_dvfs" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hyb_update_dvfs"
+            },
+            "ms2_dvfs" : {
+                "meta_policy" : "ms",
+                "task_policy" : "ms_hyb_update_dvfs"
+            }
+        },
+        "servers": {
+            "DSP" : {
+                "id": 0,
+                "count" : 128
+            },
+            "Shared mem" : {
+                "id": 1,
+                "count" : 128
+            },
+            "Const mem" : {
+                "id": 2,
+                "count" : 128
+            },
+            "data mem" : {
+                "id": 3,
+                "count" : 256
+            }
+        }
+    }
+}

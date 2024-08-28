@@ -52,37 +52,37 @@ class SchedulingPolicy(BaseSchedulingPolicy):
         if (len(tasks) == 0):
             # There aren't tasks to serve
             return None
+        
+        for task in tasks:
+            for target_server in task.mean_service_time_list:
+                target_server_type = target_server[0]
+                rqstd_ptoks = 0 #tasks[0].power_dict[target_server_type]
 
-        for target_server in tasks[0].mean_service_time_list:
-            target_server_type = target_server[0]
-            rqstd_ptoks = tasks[0].power_dict[target_server_type]
+                for server in self.servers:
+                    if (server.type == target_server_type) and \
+                        not server.busy:
+                        if self.pwr_mgmt and rqstd_ptoks > self.avail_ptoks:
+                            # print("Stalling because not enough power tokens")
+                            continue
+                        # for target_server1 in tasks[0].mean_service_time_list:
+                        #     target_server_type = target_server1[0]
+                        #     print(str(target_server_type) + "," + str(tasks[0].per_server_service_dict[target_server_type]))
 
-            for server in self.servers:
-                if (server.type == target_server_type) and \
-                    not server.busy:
-                    if self.pwr_mgmt and rqstd_ptoks > self.avail_ptoks:
-                        # print("Stalling because not enough power tokens")
-                        continue
-                    # for target_server1 in tasks[0].mean_service_time_list:
-                    #     target_server_type = target_server1[0]
-                    #     print(str(target_server_type) + "," + str(tasks[0].per_server_service_dict[target_server_type]))
+                        # Pop task in queue's head and assign it to server
+                        tasks.remove(task)
 
-                    # Pop task in queue's head and assign it to server
-                    task = tasks.pop(0)
+                        # if task.dag_id == 41 and task.tid == 0:
+                        #     print(sim_time, task)
 
-                    # if task.dag_id == 41 and task.tid == 0:
-                    #     print(sim_time, task)
-
-                    task.ptoks_used = task.power_dict[server.type]
-                    server.assign_task(sim_time, task)
-                    assert server.busy
-                    assert server.task != None
-                    if self.pwr_mgmt:
-                        self.avail_ptoks -= rqstd_ptoks
-                    # print("Scheduled to server %s, remaining ptoks = %d/%d"
-                    #     % (target_server_type, self.avail_ptoks, self.total_ptoks))
-                    return server
-
+                        task.ptoks_used = 0 #task.power_dict[server.type]
+                        server.assign_task(sim_time, task)
+                        assert server.busy
+                        assert server.task != None
+                        if self.pwr_mgmt:
+                            self.avail_ptoks -= rqstd_ptoks
+                        # print("Scheduled to server %s, remaining ptoks = %d/%d"
+                        #     % (target_server_type, self.avail_ptoks, self.total_ptoks))
+                        return server
         return None
 
 
