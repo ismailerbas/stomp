@@ -1,0 +1,23 @@
+Node name,sub deadline ratio,DSP,Shared mem,Const mem,data mem
+read_dense_result_0,0.30,None,None,None,3
+read_dense_result_previous_0,0.36,None,None,None,3
+add_2624,0.11,2,None,None,None
+write_output_sum,0.15,None,None,None,3
+read_output_sum,0.18,None,None,None,3
+multiply_3000,0.33,2,None,None,None
+read_time_sum,0.30,None,None,5,None
+write_out_time_mul,0.11,None,None,None,3
+read_out_time_mul,0.45,None,None,None,3
+divide_15,0.21,8,None,None,None
+read_two,0.30,None,None,5,None
+write_tau1_and_tau2,0.39,None,None,None,3
+read_tau1_and_tau2,0.17,None,None,None,3
+add_2625,0.15,2,None,None,None
+read_tau1,0.22,None,None,None,3
+write_tau1,0.32,None,None,None,3
+read_tau2,0.25,None,None,None,3
+write_tau2,0.21,None,None,None,3
+divide_16,0.31,8,None,None,None
+read_ar1,0.31,None,None,None,3
+divide_17,0.33,8,None,None,None
+read_ar2,0.30,None,None,None,3
