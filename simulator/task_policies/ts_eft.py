@@ -76,11 +76,12 @@ class SchedulingPolicy(BaseSchedulingPolicy):
             # There aren't tasks to serve
             return None
 
-        if (len(tasks) > max_task_depth_to_check):
-            window_len = max_task_depth_to_check
-        else:
-            window_len = len(tasks)
+        # if (len(tasks) > max_task_depth_to_check):
+        #     window_len = max_task_depth_to_check
+        # else:
+        #     window_len = len(tasks)
 
+        window_len = len(tasks)
         window = tasks[:window_len]
 
         tidx = 0;
@@ -120,7 +121,7 @@ class SchedulingPolicy(BaseSchedulingPolicy):
             server_idx = target_servers.index(min(target_servers))
             server = self.servers[server_idx]
 
-            rqstd_ptoks = task.power_dict[server.type]
+            rqstd_ptoks = 0 #task.power_dict[server.type]
             if not server.busy:           # Server is not busy.
                 # Pop task in queue and assign it to server
                 tasks.remove(task)
@@ -128,7 +129,7 @@ class SchedulingPolicy(BaseSchedulingPolicy):
                     stomp_obj.num_critical_tasks -= 1
                 # logging.debug('[%10ld] Scheduling task %2d %s to server %2d %s' % (sim_time, tidx, task.type, server_idx, self.servers[server_idx].type))
 
-                task.ptoks_used = rqstd_ptoks
+                task.ptoks_used = 0 #rqstd_ptoks
                 server.assign_task(sim_time, task)
                 bin = int(tidx / self.bin_size)
                 if (bin >= len(self.stats['Task Issue Posn'])):

@@ -758,7 +758,7 @@ class STOMP:
                     if next_tick != self.env.now:
                         self.tsched_eventq.put(self.env.now, events.SCHEDULE_TASK)
             elif event == events.META_DONE:
-                # self.print("META is done, exiting")
+                print("[STOMP]: META is done, exiting")
                 break
             elif event == events.SIM_LIMIT:
                 assert False
