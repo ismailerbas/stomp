@@ -80,12 +80,16 @@ class TASK:
         self.scheduled                  = 0
         self.rank                       = -1
         self.processor                  = -1
+        # self.type                       = ""
 
-    def init_task(self, arrival_time, dag_type, dag_id, tid, type, compute_time_array, priority, deadline, dag_dtime):
+    def set_type(self, task_type):
+        self.type = task_type
+
+    def init_task(self, arrival_time, dag_type, dag_id, tid, task_type, compute_time_array, priority, deadline, dag_dtime):
         self.dag_type                   = dag_type
         self.dag_id                     = dag_id
         self.tid                        = tid
-        self.type                       = type  # The task type
+        self.type                       = task_type  # The task type
         self.priority                   = priority  # Task input priority
         self.deadline                   = deadline  # Task input deadline
         self.dtime                      = dag_dtime
@@ -121,7 +125,7 @@ class TASK:
         return self.deadline - wait_time - actual_time
 
     def __str__(self):
-        return ('[{}.{}]'.format(self.dag_id, self.tid) + ' ( ' + self.type + ' ) ' + str(self.arrival_time))
+        return ('[{}.{}]'.format(self.dag_id, self.tid) + ' ( ' + self.type + ' ) ') # + str(self.arrival_time))
 
     def __repr__(self):
         return self.__str__()
@@ -520,14 +524,12 @@ class META:
                 atime = int(int(tmp.pop(0))*self.params['simulation']['arrival_time_scale'])
                 dag_id = int(tmp.pop(0))
                 dag_type = tmp.pop(0)
+                timestep = tmp.pop(0)
 
-                graphml_file = "inputs/{0}/dag_input/dag_{1}.graphml".format(application, dag_type)
+                graphml_file = "inputs/{0}/dag_input/dag_{1}_{2}.graphml".format(application, dag_type, timestep)
                 print(f"Reading graphml file: {graphml_file}")
                 graph = nx.read_graphml(graphml_file, TASK)
-                
-                # cycles = nx.find_cycle(graph, orientation="original")
-                # print("Done checking cycles:", cycles)
-                # exit()
+
                 #### AFFINITY ####
                 # Add matrix to maintain parent node id's
                 ####
@@ -538,11 +540,32 @@ class META:
                         parent_list.append(pred_node.tid)
                     parent_dict[node.tid] = parent_list
                     # logging.info(str(node.tid) + ": " + str(parent_dict[node.tid]))
-                comp_file = "inputs/{0}/dag_input/dag_{1}.txt".format(application, dag_type)
+                comp_file = "inputs/{0}/dag_input/dag_{1}_{2}.txt".format(application, dag_type, timestep)
+                print(f"Reading comp file: {comp_file}")
                 # if (self.params['simulation']['policy'].startswith("ms2")):
                 #    comp_file = "inputs/{0}/dag_input/dag_{1}_slack.txt".format(application, dag_type)
 
                 comp = read_matrix(comp_file)
+                # print(comp)
+                task_list = []
+                for entry in comp:
+                    task_list.append(entry[0])
+
+                for node in graph.nodes():
+                    node.set_type(task_list[node.tid])
+                    print(node.type)
+                
+                for u, v in graph.edges():
+                    u.set_type(task_list[u.tid])
+                    v.set_type(task_list[v.tid])
+                    print(u.type, v.type)
+
+
+                # nx.nx_pydot.write_dot(graph, f"/dccstor/epochs/aporvaa/RPI_FLI/stomp/tmp_{dag_type}_{timestep}.dot")
+                
+                # cycles = nx.find_cycle(graph, orientation="original")
+                # print("Done checking cycles:", cycles)
+                # exit()
                 self.params['simulation']['tasks'] = {}
                 def convert_comp_to_param(comp, resource_type):
                     for time_profile in comp:

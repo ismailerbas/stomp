@@ -6,7 +6,7 @@
         "working_dir":          ".",
         "basename":             "sched",
         "pre_gen_arrivals":     false,
-        "input_trace_file":	    "inputs/synthetic/trace_files/synthetic_trace_0.1.trc",
+        "input_trace_file":	    "inputs/FLI/trace_files/FLI_trace.trc",
         "output_trace_file":    "",
         "unit_of_time":         "10^-5s",
         "unit_of_power":        "mW",
@@ -14,11 +14,11 @@
     },
 
     "simulation" : {
-        "application":         "synthetic",
-        "meta_policy_module":  "meta_policies.ms",
-        "sched_policy_module": "task_policies.ms_hyb_update",
-        "policy":              "ms1_hyb_update",
-        "contention":          true,
+        "application":         "FLI",
+        "meta_policy_module":  "meta_policies.edf",
+        "sched_policy_module": "task_policies.simple_policy_ver2",
+        "policy":              "simple_policy_ver2",
+        "contention":          false,
         "drop":                false,
 
         "pwr_mgmt": false,
@@ -34,7 +34,7 @@
         "v_min" : 0.45,
         "power_scale" : 2.5,
         "no_completed_activity_check": true,
-        "promote":             true,
+        "promote":             false,
         "max_tasks_simulated": 10000,
         "mean_arrival_time":   10,
         "power_mgmt_enabled":  false,
@@ -56,49 +56,17 @@
                     }
                 }
             },
-            "ad": {
+            "FLI": {
                 "dag_types": {
-                    "0": {
-                        "deadline" : 400
-                    },
                     "1": {
-                        "deadline" : 400
+                        "deadline" : 9999
                     },
                     "2": {
-                        "deadline" : 400
-                    },
-                    "3": {
-                        "deadline" : 400
-                    }
-                }
-            },
-            "mapping": {
-                "dag_types": {
-                    "0": {
-                        "deadline" : 1536
-                    },
-                    "1": {
-                        "deadline" : 167
-                    },
-                    "2": {
-                        "deadline" : 1140
-                    }
-
-                }
-            },
-            "package": {
-                "dag_types": {
-                    "0": {
-                        "deadline" : 2144
-                    },
-                    "1": {
-                        "deadline" : 1140
-                    },
-                    "2": {
-                        "deadline" : 167
+                        "deadline": 9999
                     }
                 }
             }
+
         },
 
         "policies": {
@@ -190,19 +158,19 @@
         "servers": {
             "DSP" : {
                 "id": 0,
-                "count" : 1540
+                "count" : 128
             },
             "Shared mem" : {
                 "id": 1,
-                "count" : 1
+                "count" : 128
             },
             "Const mem" : {
                 "id": 2,
-                "count" : 1
+                "count" : 128
             },
             "data mem" : {
                 "id": 3,
-                "count" : 2
+                "count" : 256
             }
         },
 
