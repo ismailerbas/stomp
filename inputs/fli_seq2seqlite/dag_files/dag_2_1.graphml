@@ -992,7 +992,6 @@
 <edge source="392" target="394"/>
 <edge source="393" target="394"/>
 <edge source="394" target="395"/>
-<edge source="395" target="0"/>
 <edge source="395" target="396"/>
 <edge source="395" target="400"/>
 <edge source="395" target="404"/>
