@@ -53,6 +53,7 @@ PROMOTE          = False
 CONTENTION       = [False] #, False]
 
 APP              = ['fli']
+FLAVOR           = ['original', 'seq2seqlite']
 TYPE             = ['enc', 'dec', 'pp']
 # TYPE             = ['pp']
 POLICY_SOTA      = [] #'ads', 'edf_eft', 'rheft', 'heft']
@@ -60,7 +61,7 @@ POLICY_NEW       = ['simple_policy_ver2'] #,'ms1_hom','ms1_hetero','ms1_hyb', 'm
 POLICY           = POLICY_SOTA + POLICY_NEW
 #NEW
 ARRIVE_SCALE     = [1.0] #[1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # synthetic, ad
-PLLEL_PIXEL      = [1, 2, 4, 8, 16, 32, 64, 128] #[1, 2, 4, 8, 12, 16]
+PLLEL_PIXEL      = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024] #[1, 2, 4, 8, 12, 16]
 # PLLEL_PIXEL      = [256, 512, 1024, 2048, 4096, 8192, 2**14, 2**15, 2**16] #[1, 2, 4, 8, 12, 16]
 DROP             = [False]
 
@@ -116,147 +117,152 @@ def main(argv):
     run_count = 0
     # Simulation directory
     for app in APP:
-        for dag_type in TYPE:
-            sim_dir = "output/" + time.strftime("sim_%d%m%Y_%H%M%S") + "_" + str(app) + "_" + str(dag_type)
-            if os.path.exists(sim_dir):
-                shutil.rmtree(sim_dir)
-            os.makedirs(sim_dir)
-
-            # This dict is used to temporarily hold the output from the
-            # different runs. Everything is dumped to files later on.
-            sim_output = {}
-
-            start_time = time.time()
-            num_executions = 0
-            first_time = True
-
-            # We open the JSON config file and update the corresponding
-            # parameters directly in the stomp_params dicttionary
-            if app == "synthetic":
-                CONF_FILE = './inputs/stomp.json'
-            elif app == "fli":
-                CONF_FILE = './inputs/stomp_fli.json'
-            else:
-                CONF_FILE = './inputs/stomp_real.json'
-
-            with open(CONF_FILE) as conf_file:
-                stomp_params = json.load(conf_file)
-
-            stomp_params['general']['working_dir'] = os.getcwd() + '/' + sim_dir
-
-
-            ###############################################################################################
-            # MAIN LOOP
-            for pwr_mgmt in PWR_MGMT:
-                if pwr_mgmt == False:
-                    SLACK_PERC_ = [0]
-                    PTOKS_ = [1000000]
+        for flavor in FLAVOR:
+            for dag_type in TYPE:
+                if flavor == 'seq2seqlite':
+                    app_name = str(app) + '_seq2seqlite'
                 else:
-                    SLACK_PERC_ = SLACK_PERC
-                    PTOKS_ = PTOKS
-                for slack_perc in SLACK_PERC_:
-                    for drop in DROP:
-                        for cont in CONTENTION:
-                            for x in range(0,len(PLLEL_PIXEL)):
-                                print(x)
-                                pllel_pixel = PLLEL_PIXEL[x]
+                    app_name = str(app)
+                sim_dir = "output/" + str(app_name) + "_" + str(dag_type) + "/" + time.strftime("sim_%d%m%Y_%H%M%S")
+                if os.path.exists(sim_dir):
+                    shutil.rmtree(sim_dir)
+                os.makedirs(sim_dir)
 
-                                for timestep in TIMESTEPS:
+                # This dict is used to temporarily hold the output from the
+                # different runs. Everything is dumped to files later on.
+                sim_output = {}
 
-                                    #for arr_scale in ARRIVE_SCALE:
-                                    for y in range(0,RUNS):
-                                        for policy in POLICY:
-                                            arr_scale = ARRIVE_SCALE[0] + DELTA*y
-                                            print("Pllel Pixel: " + str(pllel_pixel) + "arr_scale: " + str(arr_scale))
-                                            # print(ARRIVE_SCALE0+ARRIVE_SCALE2)
-                                            # if (policy in POLICY_NEW and (drop == False)):
-                                            #     print("Only dropping for NEW/Not arr_scale", policy, drop, arr_scale)
-                                            #     continue
+                start_time = time.time()
+                num_executions = 0
+                first_time = True
 
-                                            print("Running", policy, drop, arr_scale, run_count)
+                # We open the JSON config file and update the corresponding
+                # parameters directly in the stomp_params dicttionary
+                if app == "synthetic":
+                    CONF_FILE = './inputs/stomp.json'
+                elif app == "fli":
+                    CONF_FILE = './inputs/stomp_fli.json'
+                else:
+                    CONF_FILE = './inputs/stomp_real.json'
 
-                                            for ptoks in PTOKS_:
-                                                sim_output[arr_scale] = {}
-                                                stomp_params['simulation']['pwr_mgmt'] = pwr_mgmt
-                                                stomp_params['simulation']['total_ptoks'] = ptoks
-                                                stomp_params['simulation']['slack_perc'] = slack_perc
-                                                stomp_params['simulation']['arrival_time_scale'] = arr_scale
+                with open(CONF_FILE) as conf_file:
+                    stomp_params = json.load(conf_file)
 
-                                                first_flag = False
-                                                for dsp_count in [128]: #range(0,10,2):
-                                                    for sharedmem_count in [128]: #range(2,10,2):
-                                                        for constmem_count in [128]: #range(0,10,2):
-                                                            for datamem_count in [256]: #range(0,10,2):
-                                                                stomp_params['simulation']['servers']['DSP']['count'] = dsp_count
-                                                                stomp_params['simulation']['servers']['Shared mem']['count'] = sharedmem_count
-                                                                stomp_params['simulation']['servers']['Const mem']['count'] = constmem_count
-                                                                stomp_params['simulation']['servers']['data mem']['count'] = datamem_count
-                                                                print("Running for D: %d SMem:%d CMem:%d DMem:%d" %(dsp_count, sharedmem_count, constmem_count, datamem_count))
+                stomp_params['general']['working_dir'] = os.getcwd() + '/' + sim_dir
 
-                                                                run_count += 1
-                                                                sim_output[arr_scale][policy] = {}
 
-                                                                stomp_params['simulation']['drop']         = drop
-                                                                stomp_params['simulation']['contention']   = cont
-                                                                stomp_params['simulation']['promote']      = PROMOTE
+                ###############################################################################################
+                # MAIN LOOP
+                for pwr_mgmt in PWR_MGMT:
+                    if pwr_mgmt == False:
+                        SLACK_PERC_ = [0]
+                        PTOKS_ = [1000000]
+                    else:
+                        SLACK_PERC_ = SLACK_PERC
+                        PTOKS_ = PTOKS
+                    for slack_perc in SLACK_PERC_:
+                        for drop in DROP:
+                            for cont in CONTENTION:
+                                for x in range(0,len(PLLEL_PIXEL)):
+                                    print(x)
+                                    pllel_pixel = PLLEL_PIXEL[x]
 
-                                                                sim_output[arr_scale][policy] = {}
-                                                                sim_output[arr_scale][policy]['avg_resp_time'] = {}
-                                                                sim_output[arr_scale][policy]['met_deadline'] = {}
+                                    for timestep in TIMESTEPS:
 
-                                                                ###########################################################################################
-                                                                # Update the simulation configuration by updating
-                                                                # the specific parameters in the input JSON data
-                                                                stomp_params['simulation']['application'] = app
-                                                                stomp_params['simulation']['policy'] = policy
-                                                                print(stomp_params['simulation']["policies"][policy])
-                                                                stomp_params['simulation']['sched_policy_module'] = 'task_policies.' + stomp_params['simulation']["policies"][policy]["task_policy"]
-                                                                stomp_params['simulation']['meta_policy_module'] = 'meta_policies.' + stomp_params['simulation']["policies"][policy]["meta_policy"]
+                                        #for arr_scale in ARRIVE_SCALE:
+                                        for y in range(0,RUNS):
+                                            for policy in POLICY:
+                                                arr_scale = ARRIVE_SCALE[0] + DELTA*y
+                                                print("Pllel Pixel: " + str(pllel_pixel) + "arr_scale: " + str(arr_scale))
+                                                # print(ARRIVE_SCALE0+ARRIVE_SCALE2)
+                                                # if (policy in POLICY_NEW and (drop == False)):
+                                                #     print("Only dropping for NEW/Not arr_scale", policy, drop, arr_scale)
+                                                #     continue
 
-                                                                stomp_params['general']['basename'] = policy + \
-                                                                    "_pwr_mgmt_" + str(pwr_mgmt) + \
-                                                                    "_slack_perc_" + str(slack_perc) + \
-                                                                    "_cont_" + str(cont) + \
-                                                                    "_drop_" + str(drop) + \
-                                                                    '_ptoks_' + str(ptoks) + \
-                                                                    "_arr_" + str(arr_scale) + \
-                                                                    '_llpixel_' + str(pllel_pixel) + \
-                                                                    '_timestep_' + str(timestep) + \
-                                                                    '_dsp_' + str(dsp_count) + \
-                                                                    '_smem_' + str(sharedmem_count) + \
-                                                                    '_cmem_' + str(constmem_count) + \
-                                                                    '_dmem_' + str(datamem_count)
-                                                                stdout_fname=sim_dir + "/out_" + stomp_params['general']['basename']
-                                                                
-                                                                conf_str = json.dumps(stomp_params)
+                                                print("Running", policy, drop, arr_scale, run_count)
 
-                                                                ###########################################################################################
-                                                                # Create command and execute the simulation
+                                                for ptoks in PTOKS_:
+                                                    sim_output[arr_scale] = {}
+                                                    stomp_params['simulation']['pwr_mgmt'] = pwr_mgmt
+                                                    stomp_params['simulation']['total_ptoks'] = ptoks
+                                                    stomp_params['simulation']['slack_perc'] = slack_perc
+                                                    stomp_params['simulation']['arrival_time_scale'] = arr_scale
 
-                                                                command = ['python ./simulator/stomp_main.py'
-                                                                        + ' -c ' + CONF_FILE
-                                                                        + ' -j \'' + conf_str + '\''
-                                                                        ]
-                                                                command_str = ' '.join(command)
-                                                                command_str = command_str + ' -i ../../inputs/' + str(app) + '/trace_files/' + str(app) + '_' + str(dag_type) + '_' + str(pllel_pixel) + '_' + str(timestep)+ '.trc'
-                                                                #To run on CCC lsf cluster
-                                                                command_str = 'jbsub -cores 8+1 -mem 24G -o ' + stdout_fname + ' ' + command_str
-                                                                
-                                                                if (verbose):
-                                                                    print('Running', command_str)
-                                                                    exit()
-                                                                sys.stdout.flush()
+                                                    first_flag = False
+                                                    for dsp_count in [128, 256, 512]: #range(0,10,2):
+                                                        for sharedmem_count in [128]: #range(2,10,2):
+                                                            for constmem_count in [128]: #range(0,10,2):
+                                                                for datamem_count in [256]: #range(0,10,2):
+                                                                    stomp_params['simulation']['servers']['DSP']['count'] = dsp_count
+                                                                    stomp_params['simulation']['servers']['Shared mem']['count'] = sharedmem_count
+                                                                    stomp_params['simulation']['servers']['Const mem']['count'] = constmem_count
+                                                                    stomp_params['simulation']['servers']['data mem']['count'] = datamem_count
+                                                                    print("Running for D: %d SMem:%d CMem:%d DMem:%d" %(dsp_count, sharedmem_count, constmem_count, datamem_count))
 
-                                                                with open(stdout_fname, 'wb') as out:
-                                                                    print("Running command")
-                                                                    p = subprocess.Popen(command_str, stdout=out, stderr=subprocess.STDOUT, shell=True)
-                                                                    process.append(p)
-                                                                    print("Process count now: {} (lim {})".format(len(process), JOBS_LIM))
-                                                                    if len(process) >= JOBS_LIM:
-                                                                        print(str(run_count) + "/" + str(total_count))
-                                                                        for p in process:
-                                                                            p.wait()
-                                                                        del process[:]
+                                                                    run_count += 1
+                                                                    sim_output[arr_scale][policy] = {}
+
+                                                                    stomp_params['simulation']['drop']         = drop
+                                                                    stomp_params['simulation']['contention']   = cont
+                                                                    stomp_params['simulation']['promote']      = PROMOTE
+
+                                                                    sim_output[arr_scale][policy] = {}
+                                                                    sim_output[arr_scale][policy]['avg_resp_time'] = {}
+                                                                    sim_output[arr_scale][policy]['met_deadline'] = {}
+
+                                                                    ###########################################################################################
+                                                                    # Update the simulation configuration by updating
+                                                                    # the specific parameters in the input JSON data
+                                                                    stomp_params['simulation']['application'] = app_name
+                                                                    stomp_params['simulation']['policy'] = policy
+                                                                    print(stomp_params['simulation']["policies"][policy])
+                                                                    stomp_params['simulation']['sched_policy_module'] = 'task_policies.' + stomp_params['simulation']["policies"][policy]["task_policy"]
+                                                                    stomp_params['simulation']['meta_policy_module'] = 'meta_policies.' + stomp_params['simulation']["policies"][policy]["meta_policy"]
+
+                                                                    stomp_params['general']['basename'] = policy + \
+                                                                        "_pwr_mgmt_" + str(pwr_mgmt) + \
+                                                                        "_slack_perc_" + str(slack_perc) + \
+                                                                        "_cont_" + str(cont) + \
+                                                                        "_drop_" + str(drop) + \
+                                                                        '_ptoks_' + str(ptoks) + \
+                                                                        "_arr_" + str(arr_scale) + \
+                                                                        '_llpixel_' + str(pllel_pixel) + \
+                                                                        '_timestep_' + str(timestep) + \
+                                                                        '_dsp_' + str(dsp_count) + \
+                                                                        '_smem_' + str(sharedmem_count) + \
+                                                                        '_cmem_' + str(constmem_count) + \
+                                                                        '_dmem_' + str(datamem_count)
+                                                                    stdout_fname=sim_dir + "/out_" + stomp_params['general']['basename']
+                                                                    
+                                                                    conf_str = json.dumps(stomp_params)
+
+                                                                    ###########################################################################################
+                                                                    # Create command and execute the simulation
+
+                                                                    command = ['python ./simulator/stomp_main.py'
+                                                                            + ' -c ' + CONF_FILE
+                                                                            + ' -j \'' + conf_str + '\''
+                                                                            ]
+                                                                    command_str = ' '.join(command)
+                                                                    command_str = command_str + ' -i ../../../inputs/' + str(app_name) + '/trace_files/' + str(app) + '_' + str(dag_type) + '_' + str(pllel_pixel) + '_' + str(timestep)+ '.trc'
+                                                                    #To run on CCC lsf cluster
+                                                                    command_str = 'jbsub -cores 8+1 -mem 24G -o ' + stdout_fname + ' ' + command_str
+                                                                    
+                                                                    if (verbose):
+                                                                        print('Running', command_str)
+                                                                        # exit()
+                                                                    sys.stdout.flush()
+
+                                                                    with open(stdout_fname, 'wb') as out:
+                                                                        print("Running command")
+                                                                        p = subprocess.Popen(command_str, stdout=out, stderr=subprocess.STDOUT, shell=True)
+                                                                        process.append(p)
+                                                                        print("Process count now: {} (lim {})".format(len(process), JOBS_LIM))
+                                                                        if len(process) >= JOBS_LIM:
+                                                                            print(str(run_count) + "/" + str(total_count))
+                                                                            for p in process:
+                                                                                p.wait()
+                                                                            del process[:]
 
     for p in process:
         p.wait()

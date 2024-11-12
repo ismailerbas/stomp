@@ -553,12 +553,12 @@ class META:
 
                 for node in graph.nodes():
                     node.set_type(task_list[node.tid])
-                    print(node.type)
+                    # print(node.type)
                 
                 for u, v in graph.edges():
                     u.set_type(task_list[u.tid])
                     v.set_type(task_list[v.tid])
-                    print(u.type, v.type)
+                    # print(u.type, v.type)
 
 
                 # nx.nx_pydot.write_dot(graph, f"/dccstor/epochs/aporvaa/RPI_FLI/stomp/tmp_{dag_type}_{timestep}.dot")
