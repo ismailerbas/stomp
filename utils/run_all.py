@@ -54,7 +54,9 @@ CONTENTION       = [False] #, False]
 
 APP              = ['fli']
 FLAVOR           = ['original', 'seq2seqlite']
-TYPE             = ['enc', 'dec', 'pp']
+FLAVOR           = ['seq2seqlite']
+# FLAVOR           = ['original']
+TYPE             = ['enc', 'dec']
 # TYPE             = ['pp']
 POLICY_SOTA      = [] #'ads', 'edf_eft', 'rheft', 'heft']
 POLICY_NEW       = ['simple_policy_ver2'] #,'ms1_hom','ms1_hetero','ms1_hyb', 'ms1_hyb_update', 'ms2_hom','ms2_hetero','ms2_hyb', 'ms2_hyb_update']
@@ -62,7 +64,7 @@ POLICY           = POLICY_SOTA + POLICY_NEW
 #NEW
 ARRIVE_SCALE     = [1.0] #[1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # synthetic, ad
 PLLEL_PIXEL      = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024] #[1, 2, 4, 8, 12, 16]
-# PLLEL_PIXEL      = [256, 512, 1024, 2048, 4096, 8192, 2**14, 2**15, 2**16] #[1, 2, 4, 8, 12, 16]
+PLLEL_PIXEL      = [256] #, 1024] #, 2048, 4096, 8192] #, 2**14, 2**15, 2**16] #[1, 2, 4, 8, 12, 16]
 DROP             = [False]
 
 TIMESTEPS        = [1] #, 5] #1, 5, 10, 70]
@@ -189,10 +191,10 @@ def main(argv):
                                                     stomp_params['simulation']['arrival_time_scale'] = arr_scale
 
                                                     first_flag = False
-                                                    for dsp_count in [128, 256, 512]: #range(0,10,2):
-                                                        for sharedmem_count in [128]: #range(2,10,2):
-                                                            for constmem_count in [128]: #range(0,10,2):
-                                                                for datamem_count in [256]: #range(0,10,2):
+                                                    for dsp_count in [128, 256, 512, 1024]: #range(0,10,2):
+                                                        for sharedmem_count in [128, 256, 384, 512]: #range(2,10,2):
+                                                            for constmem_count in [256, 384, 512]: #range(0,10,2):
+                                                                for datamem_count in [128]: #range(0,10,2):
                                                                     stomp_params['simulation']['servers']['DSP']['count'] = dsp_count
                                                                     stomp_params['simulation']['servers']['Shared mem']['count'] = sharedmem_count
                                                                     stomp_params['simulation']['servers']['Const mem']['count'] = constmem_count
